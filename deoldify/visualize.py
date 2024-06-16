@@ -76,7 +76,7 @@ class ModelImageVisualizer:
         watermarked: bool = True,
     ) -> Path:
         img = self._get_image_from_url(url)
-        img.save(path)
+        img.save(path.replace('jpg', 'png'))
         return self.plot_transformed_image(
             path=path,
             results_dir=results_dir,
@@ -116,7 +116,7 @@ class ModelImageVisualizer:
         orig.close()
         result_path = self._save_result_image(path, result, results_dir=results_dir)
         result.close()
-        return result_path
+        return result_path.replace('jpg', 'png')
 
     def _plot_comparison(
         self,
@@ -161,8 +161,8 @@ class ModelImageVisualizer:
     def _save_result_image(self, source_path: Path, image: Image, results_dir = None) -> Path:
         if results_dir is None:
             results_dir = Path(self.results_dir)
-        result_path = results_dir / source_path.name
-        image.save(result_path)
+        result_path = f"{results_dir}/{source_path.name}"
+        image.save(result_path.replace('jpg', 'png'))
         return result_path
 
     def get_transformed_image(
@@ -299,7 +299,7 @@ class VideoColorizer:
                 color_image = self.vis.get_transformed_image(
                     str(img_path), render_factor=render_factor, post_process=post_process,watermarked=watermarked
                 )
-                color_image.save(str(colorframes_folder / img))
+                color_image.save(str(colorframes_folder / img).replace('jpg', 'png'))
 
     def _build_video(self, source_path: Path) -> Path:
         colorized_path = self.result_folder / (
@@ -436,7 +436,7 @@ def get_stable_video_colorizer(
 
 
 def get_image_colorizer(
-    root_folder: Path = Path('./'), render_factor: int = 35, artistic: bool = True
+    root_folder: Path = Path('./'), render_factor: int = 0.1, artistic: bool = True
 ) -> ModelImageVisualizer:
     if artistic:
         return get_artistic_image_colorizer(root_folder=root_folder, render_factor=render_factor)
@@ -460,7 +460,7 @@ def get_artistic_image_colorizer(
     root_folder: Path = Path('./'),
     weights_name: str = 'ColorizeArtistic_gen',
     results_dir='result_images',
-    render_factor: int = 35
+    render_factor: int = 20
 ) -> ModelImageVisualizer:
     learn = gen_inference_deep(root_folder=root_folder, weights_name=weights_name)
     filtr = MasterFilter([ColorizerFilter(learn=learn)], render_factor=render_factor)
